@@ -1,0 +1,99 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+ 
+  <ItemDefinitionGroup>
+    <CMakeErrorCode>
+      <Text>Error Compiling your project with CMake</Text>
+    </CMakeErrorCode>
+  </ItemDefinitionGroup>
+
+  <ItemGroup>
+    <CMakeErrorCode Include="-1">
+      <Text>An error occured</Text>
+    </CMakeErrorCode>
+    <CMakeErrorCode Include="1">
+      <Text>No Target Platform specified</Text>
+    </CMakeErrorCode>
+    <CMakeErrorCode Include="2">
+      <Text>Invalid Target Platform</Text>
+    </CMakeErrorCode>
+    <CMakeErrorCode Include="3">
+      <Text>Can't build for Apple platforms from non-Apple platforms</Text>
+    </CMakeErrorCode>
+    <CMakeErrorCode Include="4">
+      <Text>Can't build for Apple platform from a platform without Xcode</Text>
+    </CMakeErrorCode>
+    <CMakeErrorCode Include="5">
+      <Text>The specified generator is incompatible with the targeted platform</Text>
+    </CMakeErrorCode>
+    <CMakeErrorCode Include="6">
+      <Text>Can't target the specified platform from the selected build platform</Text>
+    </CMakeErrorCode>
+    <CMakeErrorCode Include="99">
+      <Text>An unknown error regarding the platforms occured</Text>
+    </CMakeErrorCode>
+    <CMakeErrorCode Include="100">
+      <Text>An error occured during compilation</Text>
+    </CMakeErrorCode>
+    <CMakeErrorCode Include="101">
+      <Text>Compiler not found</Text>
+    </CMakeErrorCode>
+    <CMakeErrorCode Include="102">
+      <Text>Linker not found</Text>
+    </CMakeErrorCode>
+    <CMakeErrorCode Include="103">
+      <Text>Archiver not found</Text>
+    </CMakeErrorCode>
+    <CMakeErrorCode Include="104">
+      <Text>install_name_tool not found</Text>
+    </CMakeErrorCode>
+    <CMakeErrorCode Include="105">
+      <Text>Resource Compiler not found</Text>
+    </CMakeErrorCode>
+    <CMakeErrorCode Include="109">
+      <Text>A tool was not found</Text>
+    </CMakeErrorCode>
+    <CMakeErrorCode Include="111">
+      <Text>Invalid Build Type</Text>
+    </CMakeErrorCode>
+    <CMakeErrorCode Include="112">
+      <Text>No toolchain found for the specified architecture</Text>
+    </CMakeErrorCode>
+    <CMakeErrorCode Include="113">
+      <Text>Invalid Architecture</Text>
+    </CMakeErrorCode>
+    <CMakeErrorCode Include="114">
+      <Text>No valid environment found for build platform</Text>
+    </CMakeErrorCode>
+    <CMakeErrorCode Include="1999">
+      <Text>An error occured while building for Windows</Text>
+    </CMakeErrorCode>
+    <CMakeErrorCode Include="2001">
+      <Text>Could not find unique toolchain for the specified architecture</Text>
+    </CMakeErrorCode>
+    <CMakeErrorCode Include="2002">
+      <Text>Invalid path to Android NDK</Text>
+    </CMakeErrorCode>
+    <CMakeErrorCode Include="2003">
+      <Text>Invalid Android API Version</Text>
+    </CMakeErrorCode>
+    <CMakeErrorCode Include="2004">
+      <Text>Android API Version too recent for specified NDK</Text>
+    </CMakeErrorCode>
+    <CMakeErrorCode Include="2005">
+      <Text>Invalid c++ stdlib</Text>
+    </CMakeErrorCode>
+    <CMakeErrorCode Include="2999">
+      <Text>An error occured while building for Android</Text>
+    </CMakeErrorCode>
+    <CMakeErrorCode Include="3999">
+      <Text>An error occured while building for Linux</Text>
+    </CMakeErrorCode>
+    <CMakeErrorCode Include="4999">
+      <Text>An error occured while building for OSX</Text>
+    </CMakeErrorCode>
+    <CMakeErrorCode Include="5999">
+      <Text>An error occured while building for iOS</Text>
+    </CMakeErrorCode>
+  </ItemGroup>
+
+</Project>

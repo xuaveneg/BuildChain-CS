@@ -1,0 +1,130 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="CMake.Common.targets"/>
+  <Import Project="CMake.Cs.props"/>
+  <!--Filter NativeLibrary files which can't be processed-->
+  <Target Name="ParadoxNativeLibraryFilter" Condition="'@(NativeLibrary)'!=''">
+    <!--Not a cmake file-->
+    <Warning Condition="'@(NativeLibrary)'=='%(Identity)' and !$([System.String]::Copy(%(ProjectFile)).EndsWith('.vcxproj'))"
+      Text="Cannot consider reference to %(Filename) because it is not a Native project."/>
+    <ItemGroup>
+      <NativeLibrary Condition="'@(NativeLibrary)'=='%(Identity)' and !$([System.String]::Copy(%(ProjectFile)).EndsWith('.vcxproj'))" Remove="*"/>
+    </ItemGroup>
+    <!--Not a link-->
+    <Warning Condition="'@(NativeLibrary)'=='%(Identity)' and '%(Link)'==''"
+      Text="Cannot consider reference to %(Filename) because it has not been added as a link."/>
+    <ItemGroup>
+      <NativeLibrary Condition="'@(NativeLibrary)'=='%(Identity)' and '%(Link)'==''" Remove="*"/>
+    </ItemGroup>
+  </Target>
+  
+  <!--Retrieve infos for each NativeLibrary-->
+  <Target Name="ParadoxNativeLibraryRetrieveInfos" Condition="'@(NativeLibrary)'!=''">
+  </Target>
+  
+  <!--Get Cs References Native Libraries-->
+  <Target Name="ParadoxNativeLibraryGet"
+          Outputs="@(NativeLibrary->'%(OutputFullPath)')"/>
+  
+  <!--For portable platforms, do some additional treatments-->
+  <Target Name="ParadoxNativeLibraryAndroidNativeLibrary" Condition="'$(ParadoxPlatform)'=='Android'">
+    <MSBuild
+      Projects="%(ProjectReference.FullPath)"
+      Targets="ParadoxNativeLibraryGet">
+      <Output
+        ItemName="AndroidNativeLibrary"
+        TaskParameter="TargetOutputs"/>
+    </MSBuild>
+    <ItemGroup>
+      <AndroidNativeLibrary Include="@(NativeLibrary->'%(OutputFullPath)')"/>
+    </ItemGroup>
+    <Message Text="$(MSBuildProjectName) : @(AndroidNativeLibrary)" Importance="high"/>
+  </Target>
+  
+  <!--Call C++ Build Target From Paradox (see CMake.Cpp.targets)-->
+  <Target Name="ParadoxNativeLibraryReferenceCompile" Condition="'@(NativeLibrary)'!=''">
+    <MSBuild Condition="'@(NativeLibrary)'!=''"
+      Projects="%(NativeLibrary.FullPath)\%(ProjectFile)"
+      Targets="ParadoxNativeLibraryCreateCMake"
+      BuildInParallel="true"/>
+    <MSBuild Condition="'@(NativeLibrary)'!=''"
+      Projects="%(NativeLibrary.FullPath)\%(ProjectFile)"
+      Targets="ParadoxNativeLibraryCompile"
+      BuildInParallel="true">
+      <Output
+        ItemName="Output_%(Filename)"
+        TaskParameter="TargetOutputs"/>
+    </MSBuild>
+    <ItemGroup>
+      <NativeLibrary>
+        <OutputFullPath>@(Output_%(Filename))</OutputFullPath>
+      </NativeLibrary>
+      <NativeLibrary>
+        <OutputFilename>$([System.IO.Path]::GetFileName(%(OutputFullPath)))</OutputFilename>
+      </NativeLibrary>
+    </ItemGroup>
+  </Target>
+  
+  <!--Copy the output of the vcxproj to the output of the csproj-->
+  <Target Name="ParadoxNativeLibraryCopyOutput" Condition="'$(ParadoxArch)'!='all'"
+          Inputs="@(NativeLibrary->'%(OutputFullPath)')" Outputs="@(NativeLibrary->'$(OutDir)/%(OutputFilename)')">
+    <Copy
+      SourceFiles="@(NativeLibrary->'%(OutputFullPath)')"
+      DestinationFolder="$(OutDir)">
+      <Output
+        ItemName="Copied_%(Filename)"
+        TaskParameter="CopiedFiles"/>
+    </Copy>
+    <Message Text="Files Copied : @(Copied_%(NativeLibrary.Filename))" Importance="high"/>
+  </Target>
+
+  <!--Resolve NativeLibrary References. Prepare Native Libraries for Build-->
+  <Target Name="ParadoxNativeLibraryPrepareForBuild">
+    <CallTarget Targets="ParadoxNativeLibraryFilter;ParadoxNativeLibraryRetrieveInfos"/>
+  </Target>
+  
+  <!--Build Native Libraries-->
+  <Target Name="ParadoxNativeLibraryBuild">
+    <CallTarget Targets="ParadoxNativeLibraryReferenceCompile"/>
+  </Target>
+
+  <Target Name="ParadoxNativeLibraryPrepareForRun">
+    <CallTarget Targets="ParadoxNativeLibraryCopyOutput"/>
+  </Target>
+
+  <Target Name="ParadoxNativeLibraryClean">
+    <MSBuild Condition="'@(NativeLibrary)'!=''"
+      Projects="%(NativeLibrary.FullPath)\%(ProjectFile)"
+      Targets="ParadoxNativeLibraryCppClean;Clean"/>
+    <MSBuild Condition="'@(NativeLibrary)'!=''"
+      Projects="%(NativeLibrary.FullPath)\%(ProjectFile)"
+      Targets="ParadoxNativeLibraryOutputGet"
+      BuildInParallel="true">
+      <Output
+        ItemName="ToDelete"
+        TaskParameter="TargetOutputs"/>
+    </MSBuild>
+    <Delete Condition="'@(ToDelete)'!='' and '$(ParadoxArch)'!='all'"
+      Files="@(ToDelete->'$(OutDir)/%(Identity)')"/>
+  </Target>
+
+  <PropertyGroup>
+    <ResolveReferencesDependsOn>
+      ParadoxNativeLibraryPrepareForBuild;
+      $(ResolveReferencesDependsOn)
+    </ResolveReferencesDependsOn>
+    <CompileDependsOn>
+      ParadoxNativeLibraryBuild;
+      $(CompileDependsOn)
+    </CompileDependsOn>
+    <PrepareForRunDependsOn>
+      $(PrepareForRunDependsOn);
+      ParadoxNativeLibraryPrepareForRun;
+      ParadoxNativeLibraryAndroidNativeLibrary
+    </PrepareForRunDependsOn>
+    <CleanDependsOn>
+      ParadoxNativeLibraryClean;
+      $(CleanDependsOn)
+    </CleanDependsOn>
+  </PropertyGroup>
+  
+</Project>

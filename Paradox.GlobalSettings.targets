@@ -1,0 +1,122 @@
+<!-- Global settings used to configure the ParadoxPlatform and ParadoxGraphicsApi -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  
+  <!-- 
+    Global Settings per project
+  -->
+  <PropertyGroup>
+    <BuildDirectory>$(ParadoxPlatform)-$(ParadoxCPU)-$(ParadoxGraphicsApi)</BuildDirectory>
+    <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(BuildDirectory)\</IntermediateOutputPath>
+    <OutputPath>Bin\$(BuildDirectory)\</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <FileAlignment>512</FileAlignment>
+    <ParadoxDependenciesDir Condition="'$(ParadoxDependenciesDir)' == ''">$(MSBuildThisFileDirectory)deps\</ParadoxDependenciesDir>
+    <ParadoxDependenciesDir Condition="'$(ParadoxDependenciesDir)' != '' and !HasTrailingSlash('$(ParadoxDependenciesDir)')">$(ParadoxDependenciesDir)\</ParadoxDependenciesDir>
+    <SharpDXSdkDir Condition="'$(SharpDXSdkDir)' == ''">$(ParadoxDependenciesDir)SharpDX</SharpDXSdkDir>
+  </PropertyGroup>
+
+  <!-- 
+    Settings ParadoxGraphicsApi specific
+  -->
+  <PropertyGroup Condition=" '$(ParadoxGraphicsApi)' == 'Direct3D' ">
+    <ParadoxGraphicsApiDefines>PARADOX_GRAPHICS_API_DIRECT3D</ParadoxGraphicsApiDefines>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(ParadoxGraphicsApi)' == 'Null' ">
+    <ParadoxGraphicsApiDefines>PARADOX_GRAPHICS_API_NULL</ParadoxGraphicsApiDefines>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(ParadoxGraphicsApi)' == 'OpenGL' ">
+    <ParadoxGraphicsApiDefines>PARADOX_GRAPHICS_API_OPENGL</ParadoxGraphicsApiDefines>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(ParadoxGraphicsApi)' == 'OpenGLES' ">
+    <ParadoxGraphicsApiDefines>PARADOX_GRAPHICS_API_OPENGL;PARADOX_GRAPHICS_API_OPENGLES20</ParadoxGraphicsApiDefines>
+  </PropertyGroup>
+
+  <!-- 
+    Settings ParadoxPlatform specific
+  -->
+  <PropertyGroup Condition=" '$(ParadoxPlatform)' == 'Windows' ">
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <ParadoxPlatformDefines>FRAMEWORK_SHADER_USE_SHARPDX;PARADOX_PLATFORM_WINDOWS;PARADOX_PLATFORM_WINDOWS_DESKTOP;NET45</ParadoxPlatformDefines>
+    <FrameworkShaderUseSharpDX>true</FrameworkShaderUseSharpDX>
+    <SharpDXSdkBinDir>$(SharpDXSdkDir)\Bin\DirectX11-net40</SharpDXSdkBinDir>
+    <NUnitLiteBinDir>$(ParadoxDependenciesDir)NUnitLite\net-4.0\</NUnitLiteBinDir>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(ParadoxPlatform)' == 'WindowsRT' ">
+    <AutoIncludeSystemAssembly>true</AutoIncludeSystemAssembly>
+    <ParadoxPlatformDefines>FRAMEWORK_SHADER_USE_SHARPDX;PARADOX_PLATFORM_WINDOWS;PARADOX_PLATFORM_WINDOWS_RT;NET45;NETFX_CORE</ParadoxPlatformDefines>
+    <SharpDXSdkBinDir>$(SharpDXSdkDir)\Bin\DirectX11_1-winrt</SharpDXSdkBinDir>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(ParadoxPlatform)' == 'WindowsPhone' ">
+    <TargetFrameworkIdentifier>WindowsPhone</TargetFrameworkIdentifier>
+    <TargetFrameworkVersion>v8.0</TargetFrameworkVersion>
+    <SilverlightVersion>$(TargetFrameworkVersion)</SilverlightVersion>
+    <SilverlightApplication>false</SilverlightApplication>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ParadoxPlatformDefines>FRAMEWORK_SHADER_USE_SHARPDX;PARADOX_PLATFORM_WINDOWS;PARADOX_PLATFORM_WINDOWS_PHONE;NET45;NETFX_CORE;SILVERLIGHT;WINDOWS_PHONE</ParadoxPlatformDefines>
+    <SharpDXSdkBinDir>$(SharpDXSdkDir)\Bin\DirectX11_1-wp8-$(Platform)</SharpDXSdkBinDir>
+  </PropertyGroup>
+
+  <!--<ItemGroup Condition=" '$(ParadoxPlatform)' == 'Android' ">
+    <Reference Include="AsyncBridge">
+      <HintPath>$(MSBuildThisFileDirectory)deps\AsyncBridge\AsyncBridge.Android.dll</HintPath>
+    </Reference>
+  </ItemGroup>-->
+  
+  <PropertyGroup Condition=" '$(ParadoxPlatform)' == 'Android' ">
+    <ParadoxExternalSuffix>.Android</ParadoxExternalSuffix>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <ParadoxPlatformDefines>PARADOX_PLATFORM_MONO;PARADOX_PLATFORM_ANDROID;NET45</ParadoxPlatformDefines>
+    <FrameworkShaderUseSharpDX>false</FrameworkShaderUseSharpDX>
+    <AndroidSupportedAbis>armeabi-v7a%3barmeabi%3bx86</AndroidSupportedAbis>
+    <AndroidStoreUncompressedFileExtensions />
+    <MandroidI18n />
+    <ProjectTypeGuids>{EFBA0AD7-5A72-4C68-AF49-83D382785DCF};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <NUnitLiteBinDir>$(ParadoxDependenciesDir)NUnitLite\net-monodroid\</NUnitLiteBinDir>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(ParadoxPlatform)' == 'Android' And '$(OutputType)' == 'Exe' ">
+    <AndroidApplication>true</AndroidApplication>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(ParadoxPlatform)' == 'Android' And '$(Configuration)' == 'Debug' ">
+    <AndroidUseSharedRuntime>True</AndroidUseSharedRuntime>
+    <AndroidLinkMode>None</AndroidLinkMode>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(ParadoxPlatform)' == 'Android' And '$(Configuration)' == 'Release' ">
+    <AndroidUseSharedRuntime>False</AndroidUseSharedRuntime>
+    <AndroidLinkMode>SdkOnly</AndroidLinkMode>
+  </PropertyGroup>
+
+  <!-- 
+    Global Defines
+  -->
+  <PropertyGroup Condition=" '$(Yebis)' == 'true' ">
+    <ParadoxGraphicsApiDefines>$(ParadoxGraphicsApiDefines);PARADOX_YEBIS</ParadoxGraphicsApiDefines>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(ParadoxPlatform)' == 'Windows' ">
+    <ParadoxPlatformDefines>$(ParadoxPlatformDefines);PARADOX_EFFECT_COMPILER</ParadoxPlatformDefines>
+    <ParadoxEffectCompiler>true</ParadoxEffectCompiler>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(ParadoxPlatformForceMono)' == 'true' ">
+    <ParadoxPlatformDefines>$(ParadoxPlatformDefines);PARADOX_PLATFORM_MONO</ParadoxPlatformDefines>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug'">
+    <DefineConstants>DEBUG;TRACE;$(ParadoxGraphicsApiDefines);$(ParadoxPlatformDefines)</DefineConstants>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release'">
+    <DefineConstants>TRACE;$(ParadoxGraphicsApiDefines);$(ParadoxPlatformDefines)</DefineConstants>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+</Project>

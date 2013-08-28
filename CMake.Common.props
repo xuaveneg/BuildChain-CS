@@ -1,0 +1,70 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">  
+  <!--Properties to be set by the user (GUI)-->
+  <PropertyGroup>
+    <!--CMake Properties-->
+    <CMakeUse>true</CMakeUse>
+    <CMakeVersion>2.8.5</CMakeVersion>
+    <!--                -->
+    <!--Build Properties-->
+    <!--                -->
+    <CMakeRemoteBuild>true</CMakeRemoteBuild>
+    <CMakeBuildPlatform>Linux</CMakeBuildPlatform>
+    <CMakeBuildChainDir>CMake\</CMakeBuildChainDir><!--Must be relative to the solution folder (because of remote builds)-->
+    <!--                       -->
+    <!--Remote Build Properties-->
+    <!--                       -->
+    <CMakeRemoteCommand>ssh</CMakeRemoteCommand>
+    <!--Furuya Mac Credentials
+    <CMakeRemoteUser>Benoit</CMakeRemoteUser>
+    <CMakeRemoteIp>192.168.2.127</CMakeRemoteIp>
+    <CMakeRemoteSharedFolder>/Volumes/Build_Chain/</CMakeRemoteSharedFolder>-->
+    <!--Virtual Ubuntu Credentials-->
+    <CMakeRemoteUser>root</CMakeRemoteUser>
+    <CMakeRemoteIp>192.168.56.101</CMakeRemoteIp>
+    <CMakeRemoteSharedFolder>/home/genevaub/Build_Chain/</CMakeRemoteSharedFolder>
+    <!--Local ssh paths (because ssh on windows may not find them automatically)-->
+    <SshPrivateKey>C:\Users\benoit.genevaux\.ssh\id_rsa</SshPrivateKey>
+    <SshKnownHostsFile>C:\Users\benoit.genevaux\.ssh\known_hosts</SshKnownHostsFile>
+    <!--                 -->
+    <!--Target Properties-->
+    <!--                 -->
+    <ParadoxPlatform>Linux</ParadoxPlatform>
+    <ParadoxArch>all</ParadoxArch>
+    <!--                            -->
+    <!--Platform-specific Properties-->
+    <!--                            -->
+    <!--Android-->
+    <AndroidApiVersion>2.3</AndroidApiVersion>
+    <AndroidStdCxx>stlport</AndroidStdCxx>
+  </PropertyGroup>
+
+  <!--If we don't use CMake, reset everything (we are on windows)-->
+  <PropertyGroup>
+    <CMakeBuildPlatform Condition="'$(CMakeUse)'!='true'">Windows</CMakeBuildPlatform>
+    <CMakeRemoteBuild Condition="'$(CMakeUse)'!='true'">false</CMakeRemoteBuild>
+    <ParadoxPlatform Condition="'$(CMakeUse)'!='true'">Windows</ParadoxPlatform>
+  </PropertyGroup>
+  <!--Properties set internally-->
+  <PropertyGroup>
+    <PlatformExt Condition="'$(ParadoxPlatform)'=='Android' or '$(ParadoxPlatform)'=='Linux'">so</PlatformExt>
+    <PlatformExt Condition="'$(ParadoxPlatform)'=='iOS'">a</PlatformExt>
+    <PlatformExt Condition="'$(ParadoxPlatform)'=='OSX'">dylib</PlatformExt>
+    <PlatformExt Condition="'$(PlatformExt)'==''">dll</PlatformExt>
+    <PlatformPrefix Condition="'$(ParadoxPlatform)'!='Windows'">lib</PlatformPrefix>
+    <PlatformPrefix Condition="'$(ParadoxPlatform)'=='Windows'"></PlatformPrefix>
+    <PortablePlatform Condition="'$(ParadoxPlatform)'=='Android' or '$(ParadoxPlatform)'=='iOS'">true</PortablePlatform>
+    <PlatformScriptExtension Condition="'$(CMakeBuildPlatform)'=='Windows'">bat</PlatformScriptExtension>
+    <PlatformScriptExtension Condition="'$(CMakeBuildPlatform)'!='Windows'">sh</PlatformScriptExtension>
+    <PlatformCommandSeparator Condition="'$(CMakeBuildPlatform)'=='Windows'"> &amp;&amp; </PlatformCommandSeparator>
+    <PlatformCommandSeparator Condition="'$(CMakeBuildPlatform)'!='Windows'"> ; </PlatformCommandSeparator>
+    <AndroidApiVersion Condition="'$(ParadoxPlatform)'!='Android'"></AndroidApiVersion>
+    <AndroidStdCxx Condition="'$(ParadoxPlatform)'!='Android'"></AndroidStdCxx>
+  </PropertyGroup>
+  <!--Items set internally-->
+  <ItemGroup>
+    <PlatformArch Condition="'$(ParadoxPlatform)'=='Android'" Include="armeabi;armeabi-v7a;x86"/>
+    <PlatformArch Condition="'$(ParadoxPlatform)'=='OSX'" Include="i386;x86_64"/>
+    <PlatformArch Condition="'$(ParadoxPlatform)'=='Linux'" Include="i686;x86_64"/>
+    <PlatformArch Condition="'$(ParadoxPlatform)'=='Windows'" Include="i686;x86_64"/>
+  </ItemGroup>
+</Project>

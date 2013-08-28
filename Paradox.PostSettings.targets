@@ -1,0 +1,73 @@
+<!-- Build file post-included by all Paradox projects -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- Add Default targets used by Msbuild for undefined Platforms / or when skipping compilation under a platform -->
+  <Target Name="Build"/>
+  <Target Name="Clean"/>
+  <Target Name="ReBuild"/>
+  <Target Name="Publish"/>
+  <Target Name="GetTargetPath"/>
+  <Target Name="GetNativeManifest"/>
+  <Target Name="GetPackagingOutputs"/>
+
+  <!-- Setup VisualStudioVersion -->
+  <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '11.0' ">
+    <VisualStudioVersion>11.0</VisualStudioVersion>
+  </PropertyGroup>
+
+  <!-- Setup compiler targets per platform / language -->
+  <PropertyGroup>
+    <!-- Process by default scripts with AssemblyProcessor -->
+    <ParadoxAssemblyProcessor Condition="'$(ParadoxScript)' == 'true'">true</ParadoxAssemblyProcessor>
+    
+    <!--By default, use AssemblyProcessor from solution, unless this is a user build-->
+    <ParadoxAssemblyProcessorDir Condition="'$(ParadoxAssemblyProcessorDir)' == ''">$(SolutionDir)\Bin\Windows-AnyCPU-Direct3D\Tools\</ParadoxAssemblyProcessorDir>
+    <ParadoxAssemblyProcessorDir Condition="'$(ParadoxUserBuild)' == 'true'">$(ParadoxSdkDir)\Bin\Windows-AnyCPU-Direct3D\Tools\</ParadoxAssemblyProcessorDir>
+
+    <!-- On Android, everything is library (even Exe) -->
+    <OutputType Condition=" '$(ParadoxPlatform)' == 'Android' ">Library</OutputType>
+
+    <ParadoxCompilerTargets>$(MSBuildThisFileDirectory)Paradox.$(ParadoxPlatform).$(ParadoxProjectType).targets</ParadoxCompilerTargets>
+    <ParadoxCompilerTargetsEnable Condition="!Exists('$(ParadoxCompilerTargets)')">false</ParadoxCompilerTargetsEnable>
+    <ParadoxCompilerTargetsEnable Condition=" '$(ParadoxPlatform)' != 'Windows' and $(ParadoxWindowsOnly) == 'true'">false</ParadoxCompilerTargetsEnable>
+  </PropertyGroup>
+
+  <!-- Import the specific compiler targets for the selected platform/language -->
+  <Import Condition="'$(ParadoxCompilerTargetsEnable)' != 'false'"  Project="$(ParadoxCompilerTargets)" />
+
+  <!-- Patch assembly after build using ParadoxAssemblyProcessorOptions -->
+  <Target Name="RunParadoxAssemblyProcessor" Condition=" '$(ParadoxAssemblyProcessor)' == 'true' and '$(ParadoxAssemblyProcessorOptions)' != '' ">
+    <Message Importance="High" Text="Running Paradox AssemblyProcessor on $(TargetPath)"/>
+    <!--TODO Changes Tools directory to be global for Windows instead of Windows-Direct3D-->
+    
+    <Exec Command='"$(ParadoxAssemblyProcessorDir)Paradox.AssemblyProcessor.exe" $(ParadoxAssemblyProcessorOptions) "$(TargetPath)"'/>
+
+    <!-- Copy back *.dll from bin/Debug|Release to obj/Debug/Release directory -->
+    <Copy SourceFiles="@(MainAssembly)" DestinationFolder="$(IntermediateOutputPath)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"/>
+    <!-- Copy back *.pdb from bin/Debug|Release to obj/Debug/Release directory -->
+    <Copy SourceFiles="@(_DebugSymbolsOutputPath)" DestinationFiles="@(_DebugSymbolsIntermediatePath)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)" Condition="'$(_DebugSymbolsProduced)'=='true' and '$(SkipCopyingSymbolsToOutputDirectory)' != 'true'"/>
+  </Target>
+
+  <!-- Register ourself in PrepareForRunDependsOn -->
+  <PropertyGroup>
+    <PrepareForRunDependsOn>
+      CopyFilesToOutputDirectory;
+      RunParadoxAssemblyProcessor;
+      $(PrepareForRunDependsOn);
+    </PrepareForRunDependsOn>
+  </PropertyGroup>
+
+  <!-- In case of MonoDroid, we need to convert debugging files after assembly processor, but since Xamarin build includes MS build and inserts ConvertDebuggingFiles right after,
+      we need to totally rewrite this rule (note that it will ignore everything else... not sure how to avoid that except by doing some string splitting...) -->
+  <PropertyGroup Condition=" '$(ParadoxPlatform)' == 'Android' ">
+    <PrepareForRunDependsOn>
+      CopyFilesToOutputDirectory;
+      RunParadoxAssemblyProcessor;
+      ConvertDebuggingFiles;
+      _CollectMonoAndroidOutputs;
+    </PrepareForRunDependsOn>
+  </PropertyGroup>
+ 
+  <!--Import Local Post Settings for the solution being loaded -->
+  <Import Project="$(SolutionDir)$(SolutionName).PostSettings.Local.targets" Condition="Exists('$(SolutionDir)$(SolutionName).PostSettings.Local.targets')" />
+</Project>

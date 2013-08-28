@@ -1,0 +1,159 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="CMake.Common.targets"/>
+  <Import Project="CMake.Cpp.props"/>
+  <!--Target for generating cmake files from vcxproj-->
+  <Target Name="ParadoxNativeLibraryCreateCMake" Condition="'$(MSBuildProjectExtension)'=='.vcxproj'"
+          Inputs="$(MSBuildProjectFullPath)" Outputs="CMakeLists.txt;$(MSBuildProjectName).cmake">
+    <Message Text="Generating cmake file for project $(MSBuildProjectName) ..." Importance="high"/>
+    <!--Dummy Link object to retrieve link infos-->
+    <ItemGroup>
+      <Link Include="ToDelete"/>
+    </ItemGroup>
+    <!--Dummy CMakeLists to call .cmake file-->
+    <WriteLinesToFile
+      File="CMakeLists.txt"
+      Lines="cmake_minimum_required(VERSION $(CMakeVersion));include($(MSBuildProjectName).cmake)"
+      Overwrite="true"/>
+    <!--Real .cmake file-->
+    <!--Header / declaring project-->
+    <WriteLinesToFile
+      File="$(MSBuildProjectName).cmake"
+      Lines="#SimpleCppDll;cmake_minimum_required(VERSION $(CMakeVersion));# Project File;native_library($(TargetName)"
+      Overwrite="true"/>
+    <!--Source/Header Files-->
+    <WriteLinesToFile
+      File="$(MSBuildProjectName).cmake"
+      Lines="%22$([System.String]::Copy(%(ClCompile.Identity)).Replace('\', '/'))%22"
+      Overwrite="false"/>
+    <WriteLinesToFile
+      File="$(MSBuildProjectName).cmake"
+      Lines="%22$([System.String]::Copy(%(ClInclude.Identity)).Replace('\', '/'))%22"
+      Overwrite="false"/>
+    <WriteLinesToFile
+      File="$(MSBuildProjectName).cmake"
+      Lines=")"
+      Overwrite="false"/>
+    <!--Include directories-->
+    <WriteLinesToFile Condition="'%(ClCompile.AdditionalIncludeDirectories)'!=''"
+      File="$(MSBuildProjectName).cmake"
+      Lines="# Include Path;include_directories("
+      Overwrite="false"/>
+    <WriteLinesToFile Condition="'%(ClCompile.AdditionalIncludeDirectories)'!=''"
+      File="$(MSBuildProjectName).cmake"
+      Lines="%22$([System.String]::Copy(%(ClCompile.AdditionalIncludeDirectories)).Replace('\', '/').Trim(';').Replace(';', '%22%0A%22'))%22"
+      Overwrite="false"/>
+    <WriteLinesToFile Condition="'%(ClCompile.AdditionalIncludeDirectories)'!=''"
+      File="$(MSBuildProjectName).cmake"
+      Lines=")"
+      Overwrite="false"/>
+    <!--Link directories-->
+    <WriteLinesToFile Condition="'%(Link.AdditionalLibraryDirectories)'!=''"
+      File="$(MSBuildProjectName).cmake"
+      Lines="# Link Path;link_directories("
+      Overwrite="false"/>
+    <WriteLinesToFile Condition="'%(Link.AdditionalLibraryDirectories)'!=''"
+      File="$(MSBuildProjectName).cmake"
+      Lines="%22$([System.String]::Copy(%(Link.AdditionalLibraryDirectories)).Replace('\', '/').Trim(';').Replace(';', '%22%0A%22'))%22"
+      Overwrite="false"/>
+    <WriteLinesToFile Condition="'%(Link.AdditionalLibraryDirectories)'!=''"
+      File="$(MSBuildProjectName).cmake"
+      Lines="# TODO : Link directories"
+      Overwrite="false"/>
+    <!--Additional solution references (one declaration for each -> do it in one shot)-->
+    <WriteLinesToFile Condition="'@(ProjectReference)'=='%(Identity)' and '%(RelativeDir)'!=''"
+      File="$(MSBuildProjectName).cmake"
+      Lines="# Link Solution References;link_native_library(;%22$([System.String]::Copy(%(RelativeDir)).Replace('\', '/'))%22;)"
+      Overwrite="false"/>
+    <!--TODO : external references-->
+    <!--Preprocessor definitions-->
+    <WriteLinesToFile Condition="'%(ClCompile.PreprocessorDefinitions)'!=''"
+      File="$(MSBuildProjectName).cmake"
+      Lines="add_definitions("
+      Overwrite="false"/>
+    <WriteLinesToFile Condition="'%(ClCompile.PreprocessorDefinitions)'!=''"
+      File="$(MSBuildProjectName).cmake"
+      Lines="-D$([System.String]::Copy(%(ClCompile.PreprocessorDefinitions)).Trim(';').Replace(';', '%0A-D'))"
+      Overwrite="false"/>
+    <WriteLinesToFile Condition="'%(ClCompile.PreprocessorDefinitions)'!=''"
+      File="$(MSBuildProjectName).cmake"
+      Lines=")"
+      Overwrite="false"/>
+    <!--Clean Dummy Link object-->
+    <ItemGroup>
+      <Link Remove="ToDelete"/>
+    </ItemGroup>
+    <Message Text="cmake file for project $(MSBuildProjectName) generated." Importance="high"/>
+  </Target>
+  
+  <!--Conf Getters-->
+  <Target Name="ParadoxNativeLibraryOutputGet" Outputs="$(PlatformPrefix)$(TargetName).$(PlatformExt)"/>
+  
+  <!--CMake command : Returned Error Code Messages-->
+  <Import Project="CMake.Errors.props"/>
+  
+  <!--Compile the C++ Project With CMake and their reference-->
+  <!--Remote build-->
+  <Target Name="ParadoxNativeLibraryRemoteCompile"
+          Inputs="@(ClCompile);@(ClInclude)" Outputs="$(MSBuildProjectDirectory)/$(RelativeOutput)/$(PlatformPrefix)$(TargetName).$(PlatformExt)">
+    <Message Text="Trying to reach build server $(CMakeRemoteIp) ..." Importance="high"/>
+    <Exec
+      Command="ping -n 1 -l 1 $(CMakeRemoteIp) | find %22Lost = 0%22 > nul"
+      ContinueOnError="true"
+      IgnoreExitCode="true">
+      <Output
+        PropertyName="return"
+        TaskParameter="ExitCode"/>
+    </Exec>
+    <Error Condition="'$(return)'!='0'"
+      Text="Can't reach remote build machine $(CMakeRemoteIp)"/>
+    <Message Text="Reached build server $(CMakeRemoteIp)." Importance="high"/>
+    <Message Text="Compiling project $(MSBuildProjectName) with CMake ..." Importance="high"/>
+    <Exec
+      Command="%22$(CMakeRemoteCommand)%22 %22$(CMakeRemoteUser)%22@%22$(CMakeRemoteIp)%22 -i %22$(SshPrivateKey)%22 -o%22UserKnownHostsFile%22=%22$(SshKnownHostsFile)%22 cd %22$(CMakeRemoteSharedFolder)/$([MSBuild]::MakeRelative($(SolutionDir), $(MSBuildProjectDirectory)).Replace('\', '/'))%22 $(PlatformCommandSeparator) %22$(CMakeRemoteSharedFolder)/$(CMakeBuildChainDir.Replace('\','/'))/$(ParadoxPlatform)/build.$(PlatformScriptExtension)%22 %22.%22 %22$(RelativeBaseOutput.Replace('\', '/'))%22 $(Configuration) %(ArchToCompile.Identity) $(AndroidApiVersion) $(AndroidStdCxx)"
+      ContinueOnError="true"
+      IgnoreExitCode="true"
+      IgnoreStandardErrorWarningFormat="false">
+      <Output
+        PropertyName="return"
+        TaskParameter="ExitCode"/>
+    </Exec>
+    <!--Returned Error Code Message-->
+    <Error Condition="'$(return)'=='%(CMakeErrorCode.Identity)'" Text="%(Text)"/>
+    <Error Condition="'$(return)'!='0'" Text="Error Compiling your project with CMake"/>
+    <Message Text="Project $(MSBuildProjectName) compiled." Importance="high"/>
+  </Target>
+  <!--Local build-->
+  <Target Name="ParadoxNativeLibraryLocalCompile"
+          Inputs="@(ClCompile);@(ClInclude)" Outputs="$(MSBuildProjectDirectory)/$(RelativeOutput)/$(PlatformPrefix)$(TargetName).$(PlatformExt)">
+    <Message Text="Compiling project $(MSBuildProjectName) with CMake ..." Importance="high"/>
+    <Exec
+      Command="%22$(SolutionDir)/$(CMakeBuildChainDir)/$(ParadoxPlatform)/build.$(PlatformScriptExtension)%22 %22.%22 %22$(RelativeBaseOutput.Replace('\', '/'))%22 $(Configuration) %(ArchToCompile.Identity) $(AndroidApiVersion) $(AndroidStdCxx)"
+      ContinueOnError="true"
+      IgnoreExitCode="true"
+      IgnoreStandardErrorWarningFormat="false">
+      <Output
+        PropertyName="return"
+        TaskParameter="ExitCode"/>
+    </Exec>
+    <!--Returned Error Code Message-->
+    <Error Condition="'$(return)'=='%(CMakeErrorCode.Identity)'" Text="%(Text)"/>
+    <Error Condition="'$(return)'!='0'" Text="Error Compiling your project with CMake"/>
+    <Message Text="Project $(MSBuildProjectName) compiled." Importance="high"/>
+  </Target>
+  <!--General Build-->
+  <Target Name="ParadoxNativeLibraryCompile"
+          Inputs="@(ClCompile);@(ClInclude)" Outputs="$(MSBuildProjectDirectory)/$(RelativeOutput)/$(PlatformPrefix)$(TargetName).$(PlatformExt)">
+    <CallTarget Condition="'$(CMakeRemoteBuild)'=='true' and '$(CMakeUse)'=='true'"
+          Targets="ParadoxNativeLibraryRemoteCompile"/>
+    <CallTarget Condition="'$(CMakeRemoteBuild)'!='true' and '$(CMakeUse)'=='true'"
+          Targets="ParadoxNativeLibraryLocalCompile"/>
+    <CallTarget Condition="'$(CMakeUse)'!='true'"
+          Targets="Build"/>
+  </Target>
+  
+  <!--Clean Targets-->
+  <Target Name="ParadoxNativeLibraryCppClean">
+    <Delete Files="CMakeLists.txt;$(MSBuildProjectName).cmake"/>
+    <Delete Files="$(RelativeOutput)/$(PlatformPrefix)$(TargetName).$(PlatformExt)"/>
+  </Target>
+</Project>

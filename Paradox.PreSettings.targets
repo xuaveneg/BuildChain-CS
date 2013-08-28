@@ -1,0 +1,40 @@
+<!-- Build file pre-included by all Paradox projects -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--Import Local Pre Settings for the solution being loaded -->
+  <Import Project="$(SolutionDir)$(SolutionName).Solution.Local.targets" Condition="Exists('$(SolutionDir)$(SolutionName).Solution.Local.targets')" />
+  
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+
+    <!-- Defines the language of the project being compiled CSharp or Cpp - defined by default to CSharp, must be overriden to Cpp in a Cpp project -->
+    <ParadoxProjectType Condition="'$(ParadoxProjectType)' == ''">CSharp</ParadoxProjectType>
+
+    <!-- Flag used per-project settings to specify that it should only be compiled on Windows Desktop-->
+    <ParadoxWindowsOnly Condition="'$(ParadoxWindowsOnly)' == ''">false</ParadoxWindowsOnly>
+
+    <!-- Default value used by AssemblyProcessor -->
+    <ParadoxAssemblyProcessor Condition="'$(ParadoxAssemblyProcessor)' == ''">false</ParadoxAssemblyProcessor>
+    <ParadoxAssemblyProcessorOptions Condition="'$(ParadoxAssemblyProcessorOptions)' == ''">--auto-notify-property --parameter-key --auto-module-initializer --serialization</ParadoxAssemblyProcessorOptions>
+
+    <ParadoxGlobalSettingsTargets Condition="'$(ParadoxGlobalSettingsTargets)' == ''">$(MSBuildThisFileDirectory)Paradox.GlobalSettings.targets</ParadoxGlobalSettingsTargets>
+    <ParadoxPostSettingsTargets Condition="'$(ParadoxPostSettingsTargets)' == ''">$(MSBuildThisFileDirectory)Paradox.PostSettings.targets</ParadoxPostSettingsTargets>
+
+    <ParadoxCommonPreSettingsName Condition="'$(ParadoxCommonPreSettingsName)' == ''">$(SolutionName)</ParadoxCommonPreSettingsName>
+
+  </PropertyGroup>
+
+  <!-- Default values -->
+  <PropertyGroup>
+    <ParadoxPlatform Condition=" '$(ParadoxPlatform)' == '' ">Windows</ParadoxPlatform>
+    <ParadoxCPU Condition=" '$(ParadoxCPU)' == '' and '$(ParadoxPlatform)' == 'WindowsPhone'">x86</ParadoxCPU>
+    <ParadoxCPU Condition=" '$(ParadoxPlatform)' == 'WindowsPhone' and '$(Platform)' == 'ARM'">ARM</ParadoxCPU>
+    <ParadoxCPU Condition=" '$(ParadoxCPU)' == '' ">AnyCPU</ParadoxCPU>
+    <ParadoxGraphicsApi Condition=" '$(ParadoxGraphicsApi)' == ''">Direct3D</ParadoxGraphicsApi>
+  </PropertyGroup>
+
+  <!--Import Global Settings-->
+  <Import Project="$(ParadoxGlobalSettingsTargets)"/>
+
+  <!--Import Local Pre Settings for the solution being loaded -->
+  <Import Project="$(SolutionDir)$(ParadoxCommonPreSettingsName).PreSettings.Local.targets" Condition="Exists('$(SolutionDir)$(ParadoxCommonPreSettingsName).PreSettings.Local.targets')" />
+</Project>

@@ -1,0 +1,14 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <!--Contains the output folder relative to the project dir-->
+    <RelativeBaseOutput Condition="!$([System.IO.Path]::IsPathRooted($(OutDir)))">$(OutDir)</RelativeBaseOutput>
+    <RelativeBaseOutput Condition="$([System.IO.Path]::IsPathRooted($(OutDir)))">$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)', '$(OutDir)'))</RelativeBaseOutput>
+    <RelativeOutput>$(RelativeBaseOutput)/$(Configuration)/$(ParadoxPlatform)/$(AndroidApiVersion)/$(ParadoxArch)</RelativeOutput>
+    <AbsoluteOutput>$(MSBuildProjectDirectory)/$(RelativeOutput)</AbsoluteOutput>
+    <OutDir Condition="'$(CMakeUse)'!='true'">$(AbsoluteOutput)\</OutDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <ArchToCompile Condition="'$(ParadoxArch)'=='all'" Include="@(PlatformArch)"/>
+    <ArchToCompile Condition="'$(ParadoxArch)'!='all'" Include="$(ParadoxArch)"/>
+  </ItemGroup>
+</Project>
