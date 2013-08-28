@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleCs", "SimpleCs.csproj", "{0431BCEA-9BB3-41A3-82DE-65DEC68FF1DE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleCsDll", "..\SimpleCsDll\SimpleCsDll.csproj", "{30D09FF9-BE61-4733-B13F-6E27AC1B6661}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleCsDllCall", "..\SimpleCsDllCall\SimpleCsDllCall.csproj", "{76EAA851-F331-45A5-B986-39DC5CF80A17}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0431BCEA-9BB3-41A3-82DE-65DEC68FF1DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0431BCEA-9BB3-41A3-82DE-65DEC68FF1DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0431BCEA-9BB3-41A3-82DE-65DEC68FF1DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0431BCEA-9BB3-41A3-82DE-65DEC68FF1DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30D09FF9-BE61-4733-B13F-6E27AC1B6661}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30D09FF9-BE61-4733-B13F-6E27AC1B6661}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30D09FF9-BE61-4733-B13F-6E27AC1B6661}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30D09FF9-BE61-4733-B13F-6E27AC1B6661}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76EAA851-F331-45A5-B986-39DC5CF80A17}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76EAA851-F331-45A5-B986-39DC5CF80A17}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76EAA851-F331-45A5-B986-39DC5CF80A17}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76EAA851-F331-45A5-B986-39DC5CF80A17}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = SimpleCs.csproj
+	EndGlobalSection
+EndGlobal
