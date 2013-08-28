@@ -1,0 +1,54 @@
+This document describes build.{bat,sh} return codes.
+When adding new return code, don't forget to consider it in the CMake.targets
+----------- 000 : ok
+000 : Success
+----------- 001-099 : platform errors
+001 : No Target Platform specified
+002 : Invalid Target Platform
+003 : Apple build on non-Apple platform
+004 : Apple build without Xcode
+005 : Generator incompatible with platform
+006 : Can't target the specified platform on the selected build platform
+
+099 : Incompatible platforms, but we dont know which ones
+----------- 100 : Compilation Error (can't have more information)
+100 : Compilation Error
+----------- 101-199 : CMake  generic Errors
+----- 101-109 : tool not found
+101 : Compiler not found
+102 : Linker not found
+103 : Archiver not found
+104 : install_name_tool not found
+105 : Resource Compiler not found
+
+109 : A tool was not found, but we don't know which one
+-----
+111 : Invalid Build Type
+112 : No toolchain found for the specified architecture
+113 : Invalid Architecture
+114 : No valid environment found for build platform
+----------- 1001-1999 : Windows	Errors
+1999 : An error occured while building for Windows, but we don't know which one
+----------- 2001-2999 : Android	Errors
+2001 : Could not find unique toolchain for specified configuration
+2002 : Invalid path to Android NDK
+2003 : Invalid Android API version
+2004 : Android API version too recent for specified NDK
+2005 : Invalid c++ stdlib
+2999 : An error occured while building for Android, but we don't know which one
+----------- 3001-3999 : Linux	Errors
+3999 : An error occured while building for Linux, but we don't know which one
+----------- 4001-4999 : OSX		Errors
+4999 : An error occured while building for OSX, but we don't know which one
+----------- 5001-5999 : iOS		Errors
+5999 : An error occured while building for iOS, but we don't know which one
+----------- 6001-6999 : 		Errors
+6999 : An error occured while building for , but we don't know which one
+----------- 7001-7999 : 		Errors
+7999 : An error occured while building for , but we don't know which one
+----------- 8001-8999 : 		Errors
+8999 : An error occured while building for , but we don't know which one
+----------- 9001-9999 : 		Errors
+9999 : An error occured while building for , but we don't know which one
+----------- -1 : generic error
+-1 : An error occured, but we don't know which one
