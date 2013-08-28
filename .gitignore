@@ -1,0 +1,15 @@
+*~
+*.suo
+
+Files/
+
+bin/
+lib/
+obj/
+assembly/
+*/bin/
+*/obj/
+
+__tmp_build/
+*/__tmp_build/
+build/
