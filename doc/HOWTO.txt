@@ -1,0 +1,126 @@
+Howto use the buildchain :
+-----
+1 Create a cs project in visual studio
+2 Write your cs code
+3 Create a cpp project in visual studio
+4 Write you multi-platform cpp code
+  (Note : This is not easy, you may have to define a common environment, like CppEnvironment/Environment.h
+  included in the repository)
+5 Include additional CMake targets
+  - CMake.Cs.targets for cs projects
+  - CMake.Cpp.targets for cpp projects
+  (see examples in repository to know where)
+6 Define CMake properties as you want to build your project in CMake.Common.props
+  - CMakeUse : tells if you want to use cmake for the toolchain
+	  yes -> read the rest of the file. Note that it will use mingw on windows
+	  no -> you don't have to read the rest of the file, because it will use vs for everything
+	  other -> same as no
+  - CMakeVersion : the cmake version (2.8.5 is a minimum, can't remember exactly why ...)
+  - CMakeBuildPlatform : the platform on which you build code. On VS without remote, it will be windows.
+    Used to know where to find the build script.
+	Valid ones are Windows, Linux and OSX.
+  - CMakeBuildChainDir : the path where the CMake files & scripts are copied.
+    Needs to be relative to the solution dir because of remote builds.
+  - CMakeRemoteBuild : tells if the build needs to be remote
+	  yes -> set the next 4 props. A shared folder needs to be mounted in the remote build server
+	  no -> you can pass on the next 4 props, because they won't be used for the build.
+	  other -> same as no
+  - CMakeRemoteCommand : the command to execute, may be useful if you want to use some options with ssh
+    or if ssh is not in your path.
+  - CMakeRemoteUser : the user with which you want to connect to the remote build server.
+  - CMakeRemoteIp : the remote server ip or name
+  - CMakeRemoteSharedFolder : the path to the mounted remote shared folder
+  - SshPrivateKey : Better use keys for ssh authentication. On windows, ssh may failed to find your keys
+    by default. If so you'll have to set it here.
+  - SshKnownHostsFile : Same as previous : windows may fail to find your known hosts file. If so, you'll have
+    to set it here.
+  - ParadoxPlatform : the targeted platform.
+    Valid ones are Android, Windows, Linux, OSX, iOS.
+  - ParadoxArch : the targeted architecture.
+    Valid ones are :
+	  Android -> armeabi ; armeabi-v7a ; x86 (the only ones considered by Mono)
+	  OSX -> i386 ; x86_64
+	  Linux -> i686 ; x86_64
+	  Windows -> i686 ; x86_64
+	  iOS -> not relevant (lipo should create universal library with armv6 armv7 and i386)
+	  all will build for all valid platforms.
+  - AndroidApiVersion : the api version (only for Android)
+  - AndroidStdCxx : the stdcxx library used (only for Android)
+7 Disable build for cpp projects in project configuration (not mandatory, but it will create
+  may-be-unused-or-conflictable dll)
+8 Add reference on cpp projects in cs projects by adding a NativeLibrary Item pointing on the project folder.
+  Right now, you have to edit the .csproj to make the items point to a folder, but it may change in the future
+9 Build your cs project
+-----
+What does it do exactly :
+-----
+1 During Prepare for Build, it filters the NativeLibrary items to keep only the ones that are relevant to be
+  considered as Native Libraries and retrieves some informations on the remaining NativeLibrary items.
+2 During Build, it compiles the Native Library project by
+  - generating cmake files (<project-name>.cmake, containing a cmake declaration of the project, and 
+    CMakeLists.txt, containing a call to the <project-name>.cmake, as cmake can only be used on
+	CMakeLists.txt files)
+  - calling build.sh/bat (depending on the build platform) from the <CMakeBuildChainDir>/<ParadoxPlatform>
+    folder. This one creates a temporary folder, where it calls cmake.
+  The output where the shared/dynamic libraries will be created is
+  <vcxprojOutDir>/<Config>/<ParadoxPlatform>/<AndroidApiVersion>/<ParadoxArch> for Android
+  <vcxprojOutDir>/<Config>/<ParadoxPlatform> for iOS
+  <vcxprojOutDir>/<Config>/<ParadoxPlatform>/<ParadoxArch> for the others
+  Right now, the valid configs are only Debug & Release
+3 During Prepare for Run, it copies, if only one targeted platform, the dynamic/shared libraries in the cs
+  project output folder, so that the user can direclty call the output exe on the target platform.
+  If some additional treatments are needed, like for Android/iOS, they are done here.
+4 During Clean, it deletes the copied dynamic/shared libraries in output folders of cpp and cs projects.
+
+----------
+
+Howto add a custom target platform :
+-----
+For CMake : 
+-----
+- add the platform in <CMakeBuildChainDir>/constants.cmake
+- create the folder <CMakeBuildChainDir>/<NewPlatform>
+- create in it the files init.cmake, constants.cmake, build.sh and build.bat
+  (see existing platforms for examples)
+  The init.cmake is the most difficult, especially if your platform needs some additional treatments, like
+  Android. In some cases, you may even have to add arguments to the build script (which require changes to
+  the VS Integration, see the TODO List)
+-----
+For VS Integration :
+-----
+- Local build :
+  define, in CMake.Common.props, the PlatformExt, the PlatformPrefix, the PortablePlatform and the
+  PlatformArch for the new platform.
+  For special treatments, some additional variables may be needed here.
+- Remote build in the new platform :
+  in addition to what is needed for local build, define, in CMake.Common.props, the
+  PlatformScriptExtension and the PlatformCommandSeparator.
+  
+----------
+
+Howto add a new architecture to an existing platform :
+-----
+- add it in the constants.cmake of the platform
+- consider it in the init.cmake of the platform. It may be very easy (apple platforms with Xcode) or
+  quite hard (Android).
+- add it in the CMake.Constants.props if you want it to be built when selected all in ParadoxArch
+
+----------
+
+Howto debug a program compiled with this chain:
+-----
+Windows :
+-----
+- with VS if the project has been compiled without cmake
+- with VS/gdb if the project has been compiled with cmake (mingw)
+  use the gdb included with the used compiler
+-----
+Linux/OSX :
+-----
+Didn't succeed in debugging cs ... (MonoDevelop / Xamarin Studio ?)
+For the cpp part of the project, use gdb
+-----
+Android/iOS :
+-----
+For cs, use Xamarin
+Didn't succeed in making it working for cpp

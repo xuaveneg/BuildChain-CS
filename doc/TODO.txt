@@ -1,0 +1,27 @@
+Easy :
+- Consider additionals OSX architectures
+  (VALID_ARCHS = m68k i386 sparc hppa ppc ppc7400 ppc970 ppc64 x86_64 armv6 armv7)
+  easy thanks to xcode.
+- make the arguments for the buld.sh/bat call not platform-specific and stop hoping that no one other that
+  Android will need them.
+  Just have to define a argN property and fill it depending on the platform, or to set them once for all.
+- Make the VS Integration works everywhere with non-relative paths. Right now, it should fail at some points
+  (like in the output path), particularly in remote builds.
+  
+Medium :
+- VS Integration for deployment on Android
+- Execution on Android
+
+Hard :
+- Test on iOS
+- Copy files for remote build, removing the need of a mounted shared folder
+- debug cpp in Android
+- debug cpp in iOS
+
+Unknown :
+- Other windows platforms (Phone ...)
+- Add cross-platform support for Linux CMake (not sure if it is well done)
+  cross-platform FOR Linux sounded like a pain in the ass (contrarely to FROM Linux ...)
+- do the call to cmake in the vcxproj tmp folder instead of always __tmp_build
+  build scripts and VS targets have to be modified, adding an argument
+- Clean everything (repository, targets, cmake files, ...)
